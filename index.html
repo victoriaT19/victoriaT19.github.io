@@ -1,0 +1,375 @@
+<title>Victória Tauanny</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Identity: chunky and playful. Ink outlines, hard offset shadows, and one color per category so the filter menu and the tags on every card read as the same system. */
+/* Tokens: --line draws outlines, --shade the hard shadows, --on-c is the text color on any category fill. */
+:root {
+  --bg: #f1ecff; --card: #ffffff; --ink: #1d1442; --muted: #4d4570; --link: #4b2fd6;
+  --line: #1d1442; --shade: #1d1442; --chip: #ebe5ff; --spec: #fff0a8; --on-c: #1d1442;
+  --f-display: "Bagel Fat One", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #140f2e; --card: #211a47; --ink: #f3efff; --muted: #bdb4e6; --link: #b7a6ff;
+  --line: #c4b6ff; --shade: #05030f; --chip: #342b6b; --spec: #3d3478;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #140f2e; --card: #211a47; --ink: #f3efff; --muted: #bdb4e6; --link: #b7a6ff;
+    --line: #c4b6ff; --shade: #05030f; --chip: #342b6b; --spec: #3d3478;
+    color-scheme: dark;
+  }
+}
+[data-cat="all"] { --c: #ffd84d; }
+[data-cat="games"], [data-go="games"] { --c: #ff7a7a; }
+[data-cat="apps"], [data-go="apps"] { --c: #ffc93c; }
+[data-cat="ml"], [data-go="ml"] { --c: #b69cff; }
+[data-cat="net"], [data-go="net"] { --c: #4fd9bd; }
+[data-cat="os"], [data-go="os"] { --c: #7cb4ff; }
+[data-cat="embedded"], [data-go="embedded"] { --c: #ff9bd2; }
+[data-cat="hw"], [data-go="hw"] { --c: #a6e34f; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.6 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; position: relative; }
+.theme { position: absolute; top: 16px; right: 0; padding: 8px 12px; font-size: 14px; z-index: 1; }
+
+/* ---------- Header ---------- */
+header.intro {
+  padding-block: clamp(72px, 9vw, 96px) clamp(36px, 6vw, 64px);
+  display: grid; gap: 22px;
+}
+.kicker { font: 600 17px/1.4 var(--f-body); color: var(--muted); }
+h1 { font: 400 clamp(46px, 9vw, 104px)/0.98 var(--f-display); margin: 0; text-wrap: balance; }
+.lede { font-size: clamp(18px, 2vw, 21px); max-width: 60ch; color: var(--muted); margin: 0; }
+.lede strong { color: var(--ink); font-weight: 700; }
+.links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 700 15px/1 var(--f-body); text-decoration: none;
+  padding: 12px 16px; border: 3px solid var(--line); border-radius: 12px;
+  background: var(--card); color: var(--ink); cursor: pointer; box-shadow: 3px 3px 0 var(--shade);
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.btn:hover { background: #ffd84d; color: var(--on-c); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shade); }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shade); }
+.email { user-select: all; }
+
+/* ---------- Main grid ---------- */
+main { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); padding-block: 24px 72px; }
+
+nav.stack { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; }
+nav.stack h2 { font: 400 22px/1 var(--f-display); margin: 0 0 14px; }
+nav.stack ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+nav.stack button.tab {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 12px; text-align: left; border: 3px solid var(--line); border-radius: 12px;
+  background: var(--card); color: var(--ink); font: 700 16px/1.3 var(--f-body); cursor: pointer;
+  box-shadow: 3px 3px 0 var(--shade); transition: transform .12s, box-shadow .12s, background .12s;
+}
+nav.stack button.tab::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); background: var(--c); }
+nav.stack button.tab span { font: 600 14px/1 var(--f-body); color: var(--muted); font-variant-numeric: tabular-nums; }
+nav.stack button.tab:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shade); }
+nav.stack button.tab[aria-pressed="true"] { background: var(--c); color: var(--on-c); transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shade); }
+nav.stack button.tab[aria-pressed="true"] span { color: var(--on-c); }
+
+.layer-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 22px; }
+.layer-head h2 { font: 400 clamp(30px, 4vw, 44px)/1.05 var(--f-display); margin: 0; }
+.layer-head p { margin: 0; color: var(--muted); font-size: 17px; }
+.status { margin: -8px 0 18px; font: 500 14px/1.4 var(--f-body); color: var(--muted); }
+
+.projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 22px; }
+article.proj {
+  background: var(--card); border: 3px solid var(--line); border-radius: 18px; box-shadow: 5px 5px 0 var(--shade);
+  padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+}
+article.proj.wide { grid-column: 1 / -1; }
+article.proj[hidden] { display: none; }
+.proj-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.proj h3 { font: 700 23px/1.2 var(--f-body); margin: 0; text-wrap: balance; }
+.proj .ctx { font: 500 14px/1.4 var(--f-body); color: var(--muted); margin-top: 4px; }
+.proj p { margin: 0; }
+.proj ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+.spec { font: 700 14px/1.4 var(--f-body); padding: 8px 12px; background: var(--spec); border: 2px solid var(--line); border-radius: 10px; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; padding-left: 0; margin-bottom: 0; }
+.chips li { list-style: none; font: 600 13px/1 var(--f-body); padding: 7px 10px; border-radius: 999px; background: var(--chip); color: var(--ink); }
+.repo { display: flex; gap: 18px; flex-wrap: wrap; font: 700 15px/1 var(--f-body); }
+.repo a { color: var(--link); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; white-space: nowrap; }
+.repo a:hover { color: var(--ink); }
+
+.cats { display: flex; flex-wrap: wrap; gap: 6px; }
+button.cat {
+  font: 700 13px/1 var(--f-body); padding: 6px 10px; border: 2px solid var(--line); border-radius: 999px;
+  background: var(--c); color: var(--on-c); cursor: pointer; transition: transform .12s;
+}
+button.cat:hover { transform: translateY(-2px); }
+
+footer { padding-block: 28px 48px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+footer code { font-family: var(--f-body); font-weight: 700; color: var(--ink); }
+
+@media (max-width: 820px) {
+  main { grid-template-columns: minmax(0, 1fr); }
+  nav.stack { position: static; }
+  nav.stack ol { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+
+<div class="wrap">
+  <button class="btn theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme"><span id="theme-label">Dark mode</span></button>
+  <header class="intro">
+    <div class="kicker">Computer Engineering at CIn, UFPE. Recife, Brazil</div>
+    <h1>Victória Tauanny</h1>
+    <p class="lede">I'm a computer engineering student who builds games and the systems underneath them: <strong>Unity games in C#, a rhythm game that runs on an FPGA through a Linux driver, a thread scheduler for an OS kernel</strong>, plus firmware for an electric car's battery and full-stack web apps.</p>
+    <div class="links">
+      <a class="btn" href="https://github.com/victoriaT19" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="btn" href="https://www.linkedin.com/in/victoria-tauanny/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <button class="btn" id="copy-email" type="button" aria-label="Copy email address"><span class="email">vtps@cin.ufpe.br</span> <span id="copy-label">Copy</span></button>
+    </div>
+  </header>
+
+  <main>
+    <nav class="stack" aria-label="Filter projects by category">
+      <h2>Categories</h2>
+      <ol>
+        <li><button type="button" class="tab" data-cat="all" aria-pressed="true">All <span>13</span></button></li>
+        <li><button type="button" class="tab" data-cat="games" aria-pressed="false">Games <span>4</span></button></li><li><button type="button" class="tab" data-cat="apps" aria-pressed="false">Applications <span>1</span></button></li><li><button type="button" class="tab" data-cat="ml" aria-pressed="false">AI &amp; Data <span>4</span></button></li><li><button type="button" class="tab" data-cat="net" aria-pressed="false">Networking <span>1</span></button></li><li><button type="button" class="tab" data-cat="os" aria-pressed="false">Operating Systems <span>2</span></button></li><li><button type="button" class="tab" data-cat="embedded" aria-pressed="false">Embedded <span>2</span></button></li><li><button type="button" class="tab" data-cat="hw" aria-pressed="false">Hardware <span>2</span></button></li>
+      </ol>
+    </nav>
+
+    <div>
+      <div class="layer-head"><h2 id="cat-title">All projects</h2><p id="cat-desc">Everything, from silicon to apps.</p></div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <div class="projects" id="grid">
+<article class="proj wide" data-cats="games">
+            <div class="cats"><button type="button" class="cat" data-go="games">Games</button></div>
+            <div><h3>3:33</h3><div class="ctx">Game jam · Unity · HTML5 · 2026</div></div>
+            <p>A short first-person horror game with a PlayStation-era look, made for the GoedWare Halloween game jam. A knock at 3:33, the same night again and again, and one rule: don't open the door. Playable in the browser.</p>
+            <ul>
+              <li>Built in Unity and exported to HTML5 so anyone can play it from the itch.io page</li>
+              <li>PSX-style visuals, tagged first-person, horror and short</li>
+            </ul>
+            <ul class="chips"><li>Unity</li><li>C#</li><li>HTML5 / WebGL</li><li>Game jam</li></ul>
+            <div class="repo"><a href="https://vtauanny19.itch.io/333" target="_blank" rel="noopener">Play on itch.io ↗</a></div>
+          </article>
+<article class="proj" data-cats="games">
+            <div class="cats"><button type="button" class="cat" data-go="games">Games</button></div>
+            <div><h3>Bipe Informática</h3><div class="ctx">Game · Unity 6 · 2025</div></div>
+            <p>A diagnosis and management game set in a PC repair shop in 1990s Brazil. You listen to the motherboard's POST beeps, run tests and figure out what is broken.</p>
+            <ul>
+              <li>Game rules kept apart from the UI, with save system</li>
+              <li>BIOS beep codes synthesized in code</li>
+              <li>Designers add new faults as data assets from an editor menu</li>
+            </ul>
+            <ul class="chips"><li>C#</li><li>Unity</li><li>Procedural audio</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/bipe-informatica" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="games embedded os hw">
+            <div class="cats"><button type="button" class="cat" data-go="games">Games</button><button type="button" class="cat" data-go="embedded">Embedded</button><button type="button" class="cat" data-go="os">Operating Systems</button><button type="button" class="cat" data-go="hw">Hardware</button></div>
+            <div><h3>Guitar Hero on FPGA</h3><div class="ctx">Hardware–software interface · IF817 · 2025</div></div>
+            <p>A rhythm game running on a DE2i-150 board. The game reads buttons and switches and drives the displays on the FPGA through a Linux PCI driver.</p>
+            <ul>
+              <li>Linux kernel module with ioctl commands for the board's I/O</li>
+              <li>Note-chart creator tool that maps songs to playable tracks</li>
+            </ul>
+            <ul class="chips"><li>C++</li><li>C</li><li>Linux driver</li><li>PCIe</li><li>Verilog</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/guitar_hero_fpga" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="games">
+            <div class="cats"><button type="button" class="cat" data-go="games">Games</button></div>
+            <div><h3>Intro to Programming Game</h3><div class="ctx">Team of 4 · IF669 · 2024</div></div>
+            <p>A small 2D game written in C as the final project of the Introduction to Programming course, my first team software project.</p>
+            <ul class="chips"><li>C</li><li>Game loop</li><li>Teamwork</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/PROJETO_IP" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj wide" data-cats="apps">
+            <div class="cats"><button type="button" class="cat" data-go="apps">Applications</button></div>
+            <div class="proj-top">
+              <div><h3>CourseSphere</h3><div class="ctx">Full-stack web app · 2026</div></div>
+            </div>
+            <p>A collaborative platform for running online courses. Instructors create courses and lessons, keep drafts private until they publish, and students enroll from a searchable catalog.</p>
+            <ul>
+              <li>Rails 8 JSON API with JWT auth and owner-only edit permissions</li>
+              <li>Server-side search, sorting and pagination; draft and published lesson states</li>
+              <li>React 19 + Vite front end with YouTube embeds, loading skeletons and toast feedback</li>
+            </ul>
+            <ul class="chips"><li>Ruby on Rails</li><li>PostgreSQL</li><li>React</li><li>Tailwind</li><li>JWT</li></ul>
+            <div class="repo"><a href="https://course-sphere-phi.vercel.app" target="_blank" rel="noopener">Live demo ↗</a><a href="https://github.com/victoriaT19/coursesphere" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj wide" data-cats="ml">
+            <div class="cats"><button type="button" class="cat" data-go="ml">AI &amp; Data</button></div>
+            <div><h3>Resonance: Physics AI</h3><div class="ctx">Gemma 4 Good Hackathon · 2026</div></div>
+            <p>A physics tutor built by fine-tuning Google's Gemma 4 E2B. It explains topics in levels, starting from intuition and moving to the full derivation, for questions like single-slit diffraction minima.</p>
+            <ul>
+              <li>Training set built from arXiv physics papers, with real model answers instead of placeholders to avoid overfitting</li>
+              <li>Fine-tuned with Unsloth and QLoRA on a single T4 GPU</li>
+              <li>Benchmarked base vs. tuned model and served a public demo with Gradio</li>
+            </ul>
+            <div class="spec">gemma-4-E2B-it · QLoRA · T4 16 GB</div>
+            <ul class="chips"><li>Python</li><li>Unsloth</li><li>Hugging Face</li><li>Gradio</li><li>LLM fine-tuning</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/resonance-physics" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="ml">
+            <div class="cats"><button type="button" class="cat" data-go="ml">AI &amp; Data</button></div>
+            <div><h3>F1 Abu Dhabi GP Predictor</h3><div class="ctx">Machine learning · Dec 2025</div></div>
+            <p>Predicted the finishing order of the 2025 Abu Dhabi Grand Prix the day before the race, from driver form, history and how similar Yas Marina is to other circuits.</p>
+            <ul>
+              <li>Track similarity score to borrow results from comparable circuits</li>
+              <li>Charts of feature importance and predicted grid-to-finish gains</li>
+            </ul>
+            <ul class="chips"><li>Python</li><li>Pandas</li><li>scikit-learn</li><li>Matplotlib</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/f1_pre-abu_dhabi" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="ml">
+            <div class="cats"><button type="button" class="cat" data-go="ml">AI &amp; Data</button></div>
+            <div><h3>NYC Rental Price Model</h3><div class="ctx">Data science · 2025</div></div>
+            <p>Exploratory analysis and a Random Forest regressor that estimates nightly prices for short-term rentals in New York City, with a written statistical report.</p>
+            <div class="spec">MAE 44.65 · RMSE 73.08 · R² 0.51</div>
+            <ul class="chips"><li>Python</li><li>Jupyter</li><li>Random Forest</li><li>EDA</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/Predicao_de_preco_de_aluguel" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="ml">
+            <div class="cats"><button type="button" class="cat" data-go="ml">AI &amp; Data</button></div>
+            <div><h3>Database Design</h3><div class="ctx">Databases course · 2025</div></div>
+            <p>A relational database taken through all three modelling stages: conceptual model, logical model and the physical SQL schema.</p>
+            <ul class="chips"><li>SQL</li><li>ER modelling</li><li>Python</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/Projeto-GDI" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="net">
+            <div class="cats"><button type="button" class="cat" data-go="net">Networking</button></div>
+            <div><h3>File Transfer over UDP</h3><div class="ctx">Computer Networks · 2025</div></div>
+            <p>A client and server that send a file over raw UDP sockets and echo it back for verification, using a small application protocol I designed on top of UDP.</p>
+            <ul>
+              <li>Metadata handshake (file name and size) before the data</li>
+              <li>Chunked transfer with plain Python sockets, no high-level libraries</li>
+            </ul>
+            <ul class="chips"><li>Python</li><li>Sockets</li><li>UDP</li><li>Protocol design</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/PROJETO_INFRACOM" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="os">
+            <div class="cats"><button type="button" class="cat" data-go="os">Operating Systems</button></div>
+            <div><h3>PintOS Threads</h3><div class="ctx">Operating Systems · 2025</div></div>
+            <p>Thread management for the PintOS teaching kernel: a non-busy-waiting alarm clock and a multi-level feedback queue scheduler.</p>
+            <ul>
+              <li>Sorted sleep list checked on each timer interrupt</li>
+              <li>MLFQ priorities from <code>nice</code> and <code>recent_cpu</code>, computed in fixed-point arithmetic</li>
+            </ul>
+            <ul class="chips"><li>C</li><li>Kernel</li><li>Scheduling</li><li>Interrupts</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/PintOS" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="embedded">
+            <div class="cats"><button type="button" class="cat" data-go="embedded">Embedded</button></div>
+            <div><h3>Battery Management System</h3><div class="ctx">Firmware · 2026</div></div>
+            <p>Firmware that monitors and protects an electric car's battery pack during charge and discharge.</p>
+            <ul>
+              <li>Separate modules for cell balancing, safety limits and communication with the cell-monitoring chips</li>
+              <li>Hardware access kept behind an MCU wrapper layer</li>
+            </ul>
+            <div class="spec">STM32G474RE · Cortex-M4 · 170 MHz</div>
+            <ul class="chips"><li>C</li><li>STM32CubeIDE</li><li>HAL</li><li>Embedded</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/Battery-Management-System" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+<article class="proj" data-cats="hw">
+            <div class="cats"><button type="button" class="cat" data-go="hw">Hardware</button></div>
+            <div><h3>RISC-V Pipelined Processor</h3><div class="ctx">Hardware Infrastructure · IF674 · 2025</div></div>
+            <p>Extended a five-stage pipelined RISC-V core that only ran five instructions, adding jumps, branches, byte and half-word memory access and immediate arithmetic, each tested in simulation.</p>
+            <div class="spec">IF → ID → EX → MEM → WB · RV32I</div>
+            <ul class="chips"><li>SystemVerilog</li><li>RISC-V</li><li>Pipelining</li><li>Simulation</li></ul>
+            <div class="repo"><a href="https://github.com/victoriaT19/Risc-v-Pipeline" target="_blank" rel="noopener">Source ↗</a></div>
+          </article>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>Victória Tauanny de Paula da Silva</span>
+    <span>Also on GitHub: a <a href="https://github.com/victoriaT19/SMP" target="_blank" rel="noopener">competitive programming notebook</a> in <code>C++17</code>.</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('copy-email');
+    var label = document.getElementById('copy-label');
+    btn.addEventListener('click', function () {
+      var done = function () { label.textContent = 'Copied'; setTimeout(function () { label.textContent = 'Copy'; }, 1600); };
+      var fallback = function () {
+        var r = document.createRange(); r.selectNodeContents(btn.querySelector('.email'));
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); label.textContent = 'Selected';
+      };
+      try { navigator.clipboard.writeText('vtps@cin.ufpe.br').then(done, fallback); } catch (e) { fallback(); }
+    });
+
+
+    var root = document.documentElement;
+    var themeLabel = document.getElementById('theme-label');
+    function currentTheme() {
+      var t = root.getAttribute('data-theme');
+      if (t === 'dark' || t === 'light') return t;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function syncThemeLabel() { themeLabel.textContent = currentTheme() === 'dark' ? 'Light mode' : 'Dark mode'; }
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      syncThemeLabel();
+    });
+    syncThemeLabel();
+
+    var titles = {
+      all: 'All projects', games: 'Games', apps: 'Applications', ml: 'AI & Data',
+      net: 'Networking', os: 'Operating Systems', embedded: 'Embedded', hw: 'Hardware'
+    };
+    var descs = {
+      all: "Everything, from silicon to apps.",
+      games: "Where I started and where I keep coming back to.", apps: "Things people use directly.", ml: "Models, predictions and the data behind them.", net: "Moving bytes between machines.", os: "Kernel code where timing matters.", embedded: "Software that talks to real hardware.", hw: "The processor itself."
+    };
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('button.tab'));
+    var cards = Array.prototype.slice.call(document.querySelectorAll('article.proj'));
+    var title = document.getElementById('cat-title');
+    var desc = document.getElementById('cat-desc');
+    var status = document.getElementById('status');
+
+    function show(cat, push) {
+      if (!titles[cat]) cat = 'all';
+      var n = 0;
+      cards.forEach(function (c) {
+        var ok = cat === 'all' || (' ' + c.getAttribute('data-cats') + ' ').indexOf(' ' + cat + ' ') > -1;
+        c.hidden = !ok;
+        if (ok) n++;
+      });
+      tabs.forEach(function (t) { t.setAttribute('aria-pressed', t.getAttribute('data-cat') === cat ? 'true' : 'false'); });
+      title.textContent = cat === 'all' ? titles.all : titles[cat];
+      desc.textContent = descs[cat];
+      status.textContent = 'Showing ' + n + ' of ' + cards.length + ' projects';
+      if (push) {
+        try { history.replaceState(null, '', cat === 'all' ? location.pathname + location.search : '#' + cat); } catch (e) {}
+      }
+    }
+
+    tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-cat'), true); }); });
+    Array.prototype.forEach.call(document.querySelectorAll('button.cat'), function (b) {
+      b.addEventListener('click', function () {
+        show(b.getAttribute('data-go'), true);
+        var h = document.getElementById('cat-title');
+        if (h && h.scrollIntoView) h.scrollIntoView({ block: 'start' });
+      });
+    });
+    show(location.hash.replace('#', ''), false);
+  })();
+</script>
