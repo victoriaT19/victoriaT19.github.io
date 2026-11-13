@@ -229,8 +229,9 @@ footer code { font-family: var(--f-body); font-weight: 700; color: var(--ink); }
             <p>An F1 strategy engineer built from public timing data and Pirelli's tyre nominations, updated after every session of the remaining 2026 races. It started as my 2025 Abu Dhabi finishing-order predictor.</p>
             <ul>
               <li>Tyre degradation model, Monte Carlo pit-strategy comparison and a lap-by-lap simulation of the whole field (traffic, overtaking, safety cars, the undercut) with an animated on-track replay</li>
-              <li>A race-engineer chat: Gemma 4 31B with tool calling over the same calculations as the dashboard</li>
-              <li>Leakage-free backtests on 2026, reported even when negative: the simulator picks pit timing no better than a historical baseline, since a quarter of real stops come under safety cars</li>
+              <li>Finishing order from a Plackett-Luce ranking model (driver and team strengths) ensembled with gradient boosting: Spearman 0.705 vs. 0.677 for the starting grid over 68 races, with win and podium chances scored by Brier</li>
+              <li>A race-engineer chat: Gemma 4 31B with tool calling over the same calculations, on a chain of free models that shows each tool call live</li>
+              <li>Leakage-free backtests, reported even when negative: pit timing is no better than a historical baseline, since a quarter of real stops come under safety cars</li>
             </ul>
             <ul class="chips"><li>Python</li><li>Monte Carlo</li><li>scikit-learn</li><li>Gradio</li><li>Plotly</li><li>Tool calling</li></ul>
             <div class="repo"><a href="https://huggingface.co/spaces/vtaua/f1-pit-wall" target="_blank" rel="noopener">Live demo ↗</a><a href="https://github.com/victoriaT19/f1-pit-wall" target="_blank" rel="noopener">Source ↗</a></div>
