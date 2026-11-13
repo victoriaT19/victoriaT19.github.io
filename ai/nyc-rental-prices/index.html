@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC rental prices · Victória Tauanny</title>
+<meta name="description" content="Exploratory analysis and a random-forest price model for short-term rentals in New York City.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Classical ML · data science · Feb 2025</div>
+    <h1>NYC rental prices</h1>
+    <p class="lede">An exploratory and statistical analysis of about 49,000 short-term rental listings in New York City, and a random-forest model that estimates a listing's nightly price.</p>
+    <div class="links">
+      <a class="pill primary" href="https://github.com/victoriaT19/Predicao_de_preco_de_aluguel" target="_blank" rel="noopener">Source ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/Predicao_de_preco_de_aluguel/blob/main/notebooks/EDA.ipynb" target="_blank" rel="noopener">Analysis notebook ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/Predicao_de_preco_de_aluguel/blob/main/docs/relatorio.pdf" target="_blank" rel="noopener">Report (PDF, Portuguese) ↗</a>
+    </div>
+    <ul class="tags"><li>pandas</li><li>scikit-learn</li><li>Random forest</li><li>statsmodels</li><li>SciPy</li><li>seaborn</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>48,883</b><span>listings with a price, from five boroughs</span></div>
+    <div class="fact"><b>R² 0.51</b><span>of the random forest on a held-out 20%, mean absolute error $44.65 per night</span></div>
+    <div class="fact"><b>F = 1,715</b><span>ANOVA across room types: the type of room explains far more than nights or availability</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>This was my first end-to-end data science project, done as a data science challenge in early 2025. I wanted to practise the whole path on a real, messy dataset: cleaning it, exploring it, testing hypotheses with statistics, and only then fitting a model, so that the model would answer questions a person investing in a rental would actually ask.</p>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>Cleaning.</strong> Listings without a price or with a price of zero removed; prices above the 99th percentile treated as outliers (the maximum was $10,000 a night against a median of $106).</li>
+      <li><strong>Exploration.</strong> Price by borough, room type and neighbourhood, a map of prices by latitude and longitude, and the words that appear most in the names of expensive and cheap listings.</li>
+      <li><strong>Statistics.</strong> Pearson correlations, ANOVA with Tukey's test across room types, Welch's t-tests between pairs, a normality test and simple linear regressions.</li>
+      <li><strong>Model.</strong> A scikit-learn pipeline with one-hot encoding for borough and room type and a 500-tree random forest on nine features: location, room type, minimum nights, reviews, host listings and availability.</li>
+    </ul>
+
+    <h2>Results</h2>
+    <ul>
+      <li><strong>Location and room type drive the price.</strong> Manhattan averaged $197 a night against $88 in the Bronx; entire homes averaged $212 against $90 for private rooms.</li>
+      <li><strong>Minimum nights and availability barely matter</strong> (correlations of 0.04 and 0.08), even if both are statistically significant with this many listings.</li>
+      <li><strong>Names carry a signal.</strong> Expensive listings say "luxury", "loft", "village"; cheap ones say "room", "cozy", "private".</li>
+      <li><strong>The model explains about half of the variance</strong> (R² 0.51, MAE $44.65, RMSE $73.08). Prices of the same kind of listing vary a lot, and the data has nothing about size, quality or photos.</li>
+    </ul>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>Explore before modelling.</strong> The analysis answered most of the questions; the model mainly confirmed what the plots already showed.</li>
+      <li><strong>Significant is not the same as important.</strong> With 49,000 rows, a correlation of 0.04 has a tiny p-value and almost no practical effect.</li>
+      <li><strong>Heavy tails need a decision.</strong> One $10,000 listing distorts every mean; how outliers are handled changes the story.</li>
+    </ol>
+
+    <h2>Looking back</h2>
+    <p>What I would do differently today, after the projects that came later:</p>
+    <ul>
+      <li>compare the model with a simple baseline, such as the median price for each borough and room type, to know how much the forest really adds;</li>
+      <li>split train and test before deciding the outlier cut, so the test set plays no part in it;</li>
+      <li>model the logarithm of the price, which suits a skewed target better than the raw dollars.</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../thermal-anomaly/">← Thermal anomaly detection</a>
+    <a href="../">All projects →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>
