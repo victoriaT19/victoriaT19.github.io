@@ -48,8 +48,10 @@
     </ul>
 
     <h2>My part</h2>
-    <p>I wrote the two modules that turn the detector into an application:</p>
+    <p>I worked on the data, the model and the application around it:</p>
     <ul>
+      <li><strong>Labelling and the dataset.</strong> I labelled the camera frames with boxes for people and backpacks in YOLO format, and organised them into the training and validation sets the detector was trained on.</li>
+      <li><strong>Training.</strong> I worked on the YOLOv8 training runs on that dataset.</li>
       <li><strong>The thermal anomaly detector</strong> (<code>thermal_detector.py</code>). It runs YOLOv8 on each frame and, for every backpack found, scores the box on the temperature image: one point if the 95th percentile of the pixels inside is above a threshold, one point if the mean inside is clearly above the mean of an 8-pixel ring around the box, with the box itself masked out of that background. Only both together raise an alert. It returns the detections, the alerts and the numbers behind each one.</li>
       <li><strong>The live app</strong> (<code>p2prolive_app.py</code>), built on the open-source p2pro-live viewer. It reads the camera's raw temperature on every frame, normalises it for the model, runs the detector and shows the result with colour maps and a history of minimum, maximum and mean temperature.</li>
     </ul>
