@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thermal anomaly detection · Victória Tauanny</title>
+<meta name="description" content="Live detection of people and backpacks on a thermal camera, with a heat check that flags a backpack hotter than its surroundings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Team project · Accenture–UFPE Innovation Center · 2025</div>
+    <h1>Thermal anomaly detection</h1>
+    <p class="lede">A pipeline for the InfiRay P2 Pro thermal camera: a YOLOv8 model finds people and backpacks in the live feed, and a heat check flags a backpack that is hotter than its surroundings.</p>
+    <div class="links">
+      <a class="pill primary" href="https://github.com/aragao-a/Projeto-Infiray-Accenture-UFPE" target="_blank" rel="noopener">Team repository ↗</a>
+    </div>
+    <ul class="tags"><li>Computer vision</li><li>YOLOv8</li><li>OpenCV</li><li>Thermal imaging</li><li>Streamlit</li><li>Jetson</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>0.91</b><span>mAP50 of the YOLOv8n detector (people and backpacks) on the validation frames</span></div>
+    <div class="fact"><b>2 checks</b><span>hottest pixels and contrast with a ring of background, both needed to raise an alert</span></div>
+    <div class="fact"><b>Live</b><span>detection and heat check on the camera's raw temperature feed, frame by frame</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I took part</h2>
+    <p>The project was part of a rotation at the Accenture–UFPE Innovation Center, with a team of four. The starting goal was practical: get the thermal camera's feed into a computer efficiently, so it could be used by AI models and industrial applications, such as a thermal view for the center's quadruped robot, counting people in meeting rooms or sweeping dark rooms.</p>
+    <p>I wanted to learn computer vision on a sensor that is not a normal camera: what a detector sees in a thermal image, and how to combine a learned model with a simple physical rule about temperature.</p>
+
+    <h2>What the team built</h2>
+    <ul>
+      <li><strong>Getting the feed.</strong> Two working routes: the camera read directly on a desktop as a webcam, and a wireless phone-to-laptop stream over ADB and scrcpy, closer to the robot setup.</li>
+      <li><strong>A dataset.</strong> Frames recorded with the camera, normalised and labelled for two classes, person and backpack, in YOLO format.</li>
+      <li><strong>The detector.</strong> YOLOv8 models trained on those frames. A larger variant and an SPP version did worse on such a small dataset; the nano model reached mAP50 0.91 and mAP50-95 0.50.</li>
+      <li><strong>Hardware tests.</strong> The camera worked on a Jetson board, but linking it to the robot was not possible: the Jetson has no Bluetooth and the robot's Raspberry Pi did not recognise the camera.</li>
+    </ul>
+
+    <h2>My part</h2>
+    <p>I wrote the two modules that turn the detector into an application:</p>
+    <ul>
+      <li><strong>The thermal anomaly detector</strong> (<code>thermal_detector.py</code>). It runs YOLOv8 on each frame and, for every backpack found, scores the box on the temperature image: one point if the 95th percentile of the pixels inside is above a threshold, one point if the mean inside is clearly above the mean of an 8-pixel ring around the box, with the box itself masked out of that background. Only both together raise an alert. It returns the detections, the alerts and the numbers behind each one.</li>
+      <li><strong>The live app</strong> (<code>p2prolive_app.py</code>), built on the open-source p2pro-live viewer. It reads the camera's raw temperature on every frame, normalises it for the model, runs the detector and shows the result with colour maps and a history of minimum, maximum and mean temperature.</li>
+    </ul>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>A model and a rule are a good pair.</strong> The detector answers "is this a backpack?", and a two-line physical check answers "is it hot?". Each is easy to test on its own, and the alert is easy to explain.</li>
+      <li><strong>Compare with the surroundings, not with a fixed number.</strong> A ring of background around each box makes the check depend on contrast, which holds up better when the whole scene warms or cools.</li>
+      <li><strong>Small datasets punish bigger models.</strong> With few recordings and situations that are hard to stage, the smallest YOLO did best.</li>
+      <li><strong>Hardware decides the architecture.</strong> The plan to put the camera on the robot ended on a missing Bluetooth radio and an unrecognised USB device, not on the model.</li>
+    </ol>
+
+    <h2>Read more</h2>
+    <ul>
+      <li><a href="https://github.com/aragao-a/Projeto-Infiray-Accenture-UFPE" target="_blank" rel="noopener">Team repository</a>: meeting notes, data preparation, training runs and the live app</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../knee-report-labeler/">← Knee report labeler</a>
+    <a href="../">All projects →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>
