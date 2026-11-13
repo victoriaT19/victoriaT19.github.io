@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An F1 strategy engineer from public data · Victória Tauanny</title>
+<meta name="description" content="How an F1 finishing-order predictor became a strategy engineer with a race simulation and an LLM agent, and what I learned on the way.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../../pit-wall/">← Pit wall</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Write-up · Pit wall · November 2026</div>
+    <h1>An F1 strategy engineer from public data</h1>
+    <p class="lede">How a finishing-order predictor turned into a strategy engineer with a race simulation and an LLM agent, and what I learned building it.</p>
+    <div class="links">
+      <a class="pill primary" href="https://huggingface.co/spaces/vtaua/f1-pit-wall" target="_blank" rel="noopener">Live demo ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/f1-pit-wall" target="_blank" rel="noopener">Code, backtests &amp; test log ↗</a>
+    </div>
+  </header>
+
+  <article class="prose">
+    <p style="margin-top:40px">In December 2025 I built a finishing-order predictor for the Abu Dhabi GP: a random forest with the drivers' recent form and a measure of how similar each circuit is to Yas Marina. It got right what everyone gets right (whoever starts at the front usually finishes there) and said nothing about the part of a race I find most interesting, strategy. Over the 2026 season the project became something else: <strong>Pit wall</strong>, a strategy engineer built only from public data, with a dashboard, a simulation of the whole race and an LLM agent that answers questions by running the same calculations.</p>
+    <p>This is the story of how it got there. The parts where the model lost to a simple rule taught me the most.</p>
+
+    <h2>1. Data: the boring problem that decides everything</h2>
+    <p>I used two free sources: FastF1 (results and grids) and OpenF1 (laps, stints, pit stops, weather, race control and telemetry). Both have rate limits. The first lesson came early: a long download that breaks halfway must not lose everything, and an interrupted gzip file is corrupt. So each event is saved as soon as it finishes, tables are written atomically (a temporary file, then a rename), and only what is missing is downloaded. Today one command updates everything after each session in about 35 seconds, and rewrites the lap file only if its content changed.</p>
+    <p>The result: 68 races from 2024 to 2026 and 61,553 "clean" laps (no starts, no pit entries or exits, no safety car, no rain), plus Pirelli's compound nominations (C1 to C6) for every race, each row with its source.</p>
+
+    <h2>2. The rule I repeated most: only what was known before the race</h2>
+    <p>Every backtest is walk-forward: to predict race N, the model only sees earlier races. That sounds obvious until the subtle leaks show up. One example: track temperature. I was using the race's own temperature, which obviously does not exist before the start. The right version uses the average of the weekend's practice sessions, or the circuit's history when there has been no practice yet.</p>
+    <p>With that discipline, the first version of the finishing-order model (gradient boosting) came out only <strong>slightly</strong> above the starting grid: a mean Spearman of 0.691 against 0.677 over 68 races, and it lost to the grid in almost half of them. I came back to this model at the end of the project (section 6).</p>
+
+    <h2>3. Tyres: separating fuel from wear</h2>
+    <p>Lap times improve as the car burns fuel and get worse as the tyre wears; the two effects are mixed. I corrected for fuel with a fixed rate (0.055 s per lap) and measured wear with a <em>within</em> estimator: the slope of the corrected lap time against tyre age <strong>inside each stint</strong>, which cancels the pace differences between drivers and cars.</p>
+    <p>To predict wear for a race not yet run, my first attempt was gradient boosting on the circuit's history. It was <strong>worse</strong> than simply using the compound's average: with about 160 examples, it memorised noise. I replaced it with a ridge regression on three variables (actual compound, track temperature, 2026 regulations), with a mean error of 0.033 s/lap. Even so, row by row it beats the simple average in 64 cases and loses in 71. The reason is interesting: Pirelli brings softer compounds precisely to tracks that are easier on tyres, so compound and track are confounded.</p>
+    <p>Then I tested the idea that seemed obviously right: measuring wear in the weekend's own practice sessions. It made things <strong>much worse</strong>: an error of 0.088 s/lap against 0.030 for the historical model. Practice long runs mix unknown fuel loads, cool-down laps and each team's own programme. The dashboard uses only the historical model, and the README explains why.</p>
+
+    <h2>4. Strategy: Monte Carlo and a negative result</h2>
+    <p>The strategy simulator draws thousands of races: wear and pace within their uncertainty, and safety cars at the circuit's historical rate (a stop under a safety car costs half). Every strategy uses the <strong>same draws</strong> (common random numbers), so the difference between two strategies has far less noise than either time on its own.</p>
+    <p>The 2026 backtest was disappointing, and I made that explicit in the dashboard: the recommended first stop is off by about 8 laps on average, <strong>the same</strong> as a simple historical rule ("stop at the same fraction of the race as the average driver did"). Digging in, a quarter of real first stops happened under a safety car, which no pre-race plan can foresee. On green-flag stops, every method is off by 6 to 7 laps. The simulator is for comparing options and scenarios, not an exact forecast.</p>
+
+    <h2>5. Simulating the whole field (and measuring before "fixing")</h2>
+    <p>The next version simulates every car lap by lap: traffic, overtaking with a logistic probability, dirty air, safety cars bunching the field. The <em>undercut</em> is not a rule in the code: it appears on its own when new tyres gain more than the gap to the car ahead. The parameters (race-day pace variation, the shuffle at the start, how hard it is to pass) were calibrated on 2025 and frozen to test on 2026.</p>
+    <p>Here I made the most instructive mistake of the project. In a replay, one car finished 56 s behind, and I concluded that the simulated field spread out too much. I proposed a fix. Before applying it, I measured: on average, the gap from P5 to the winner was 30.9 s simulated against 29.6 s real, and at P10 the simulation was, if anything, <strong>less</strong> spread out than reality. My earlier comparison was wrong (it left out lapped cars). The fix would have made the model worse. Since then I measure before I fix.</p>
+
+    <h2>6. Back to the finishing order, this time with the literature</h2>
+    <p>A race result is a ranking, and gradient boosting treated each position as an independent number. The Plackett-Luce model (a rank-ordered logit) does the opposite: each car has a strength, the winner is drawn from all cars in proportion to it, second place from those left, and so on. Van Kesteren and Bergkamp (2023) used this model to separate driver skill from car advantage; I adapted the idea to forecast the next race: strength = grid, qualifying gap and recent race pace, plus a driver effect and a team-per-season effect, with older races weighing less. I chose the hyperparameters on 2024 only and held out 2025 and 2026 for the test.</p>
+    <p>Two things taught me more than the final number:</p>
+    <ul>
+      <li><strong>A leak hidden in a tie-break.</strong> The average of the two models' ranks ties often, and the tie-break followed the row order of the table, which was sorted by the real result. The first score (0.719) was using the answer. Sorting by the grid before predicting brought it down to 0.705. The "championship order" baseline was benefiting from the same mistake.</li>
+      <li><strong>Probabilities need measuring too.</strong> Besides the order, the model gives the chance of a win, a podium and a top 10, which I scored with the Brier score, as Pitwall (Santillana, 2026), a calibrated race-simulation engine, does. Pole is worth more than a linear grid term allows; with the logarithm of the grid, the win probabilities stopped being worse than the grid's.</li>
+    </ul>
+    <p>Result: the ensemble (gradient boosting + Plackett-Luce) reached a Spearman of 0.705 against 0.677 for the grid (0.684 against 0.648 in the held-out years), better than the old model in 47 of 68 races. Against the grid it is 41 to 27, still not statistically significant, and the grid still picks the winner more often. In the simulation, retirements drawn from each driver's recent rate and race pace pooled from earlier seasons, together, made the simulated order beat the grid in 2026 (0.698 against 0.672); separately, neither helped.</p>
+
+    <h2>7. The agent: an LLM that only says what a tool computed</h2>
+    <p>The "race engineer" is Gemma 4 31B with tool calling: results, standings, finishing-order prediction, a strategy plan with what-if scenarios (other compounds, pit loss, safety-car chance) and the whole-field simulation. The prompt forbids answering from memory: every number has to come from a tool. A question like "for Hamilton in Las Vegas, is medium 25 then hard 25 better than the recommended plan?" becomes a call to the simulation, and the answer comes with the expected position, the podium chance and how often one strategy finishes ahead of the other.</p>
+    <p>Things I learned on the way:</p>
+    <ul>
+      <li><strong>An automatic evaluation</strong> with 16 questions that check both the answer and the tool called. In the first version, the agent got 15/16 with the model's default reasoning and 16/16 with minimal reasoning. I decided not to limit the model's reasoning just to win one question.</li>
+      <li><strong>The text a tool returns is part of the prompt.</strong> The agent explained the uncertainty range as "traffic" when it actually came from the random safety car. The fix was for the tool to also return a short explanation of how to read each number.</li>
+      <li><strong>Free APIs fail a lot.</strong> On Gemini's free tier there were dozens of retries for temporary errors, and a single call once took almost three minutes. On OpenRouter, the free Gemma was unavailable for hours because the shared upstream quota was used up. The agent now walks a chain of free models that can call tools (Gemma 4 31B and 26B, Nemotron, Gemma on the Gemini API), switches in about a second when one is busy, has a time budget per answer, and shows live in the chat which model is answering and each tool it calls. To make sure switching does not change the quality, I ran the same evaluation on Nemotron: 14 out of 14 questions answered correctly. The code refuses any model that is not free.</li>
+      <li><strong>Errors returned as messages</strong>, not exceptions: "the strategy must add up to 50 laps" is something the model can fix on its own in the next call.</li>
+    </ul>
+
+    <h2>8. Dashboard: the details that only show up when someone uses it</h2>
+    <p>Gradio drops Plotly's animation frames, so the replay became a custom canvas component: cars that move continuously between lap times, play, speed, a live order board and a track map smoothed from telemetry. Most improvements came from watching real use: the replay started in the order after lap one (not the grid order), the final classification read "+0.0" once everyone had crossed the line, and at the chequered flag the cars now stop exactly at their finishing gaps.</p>
+
+    <h2>What I take from this project</h2>
+    <ol class="learned">
+      <li><strong>A simple baseline is mandatory.</strong> Without it I would have believed the strategy simulator "worked".</li>
+      <li><strong>Data leakage is rarely obvious.</strong> The race's temperature looked like an innocent variable.</li>
+      <li><strong>Smaller models win with little data.</strong> A three-variable ridge regression beat gradient boosting.</li>
+      <li><strong>The right model respects the shape of the problem.</strong> Treating the result as a ranking (Plackett-Luce) paid off more than tuning another regressor.</li>
+      <li><strong>Measure before fixing.</strong> My hypothesis about the spread-out field was wrong.</li>
+      <li><strong>Leaks can hide in a tie-break.</strong> Not only variables leak: row order can too.</li>
+      <li><strong>In an agent, the tool is the reliable part; the text it returns decides how the model reads the numbers.</strong></li>
+      <li><strong>A negative result is still a result</strong>, as long as it is written down with the numbers.</li>
+    </ol>
+    <p>The season still has Las Vegas, Qatar and Abu Dhabi. The project logs its prediction for each race after every session, before the start, so I can compare it with what happens, including when it goes wrong.</p>
+
+    <h2>References</h2>
+    <ul>
+      <li>van Kesteren, E.-J. and Bergkamp, T. (2023). Bayesian analysis of Formula One race results: disentangling driver skill and constructor advantage. <em>Journal of Quantitative Analysis in Sports</em>. <a href="https://arxiv.org/abs/2203.08489" target="_blank" rel="noopener">arXiv:2203.08489</a></li>
+      <li>Santillana (2026). Pitwall: faithful natural-language race-strategy briefings from a calibrated real-time Monte Carlo engine. <a href="https://arxiv.org/abs/2607.06495" target="_blank" rel="noopener">arXiv:2607.06495</a></li>
+      <li>Heilmeier, A. et al. (2020). Application of Monte Carlo methods to consider probabilistic effects in a race simulation for circuit motorsport. <em>Applied Sciences</em> 10(12), 4229.</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More">
+    <a href="../../pit-wall/">← Pit wall project page</a>
+    <a href="../../">All projects →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../../site.js"></script>
+</body>
+</html>
