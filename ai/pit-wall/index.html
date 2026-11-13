@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pit wall · Victória Tauanny</title>
+<meta name="description" content="An F1 strategy engineer built from public data, with a whole-field race simulation and an LLM agent that answers by running it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Agent · dashboard · live demo · 2026</div>
+    <h1>Pit wall</h1>
+    <p class="lede">An F1 strategy engineer built only from public data: a tyre model, a simulation of the whole race, and a chat where an LLM answers strategy questions by running the same calculations. It is updated after every session of the remaining 2026 races.</p>
+    <div class="links">
+      <a class="pill primary" href="https://huggingface.co/spaces/vtaua/f1-pit-wall" target="_blank" rel="noopener">Open the live demo ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/f1-pit-wall" target="_blank" rel="noopener">Source ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/f1-pit-wall/blob/main/docs/methodology.md" target="_blank" rel="noopener">Methodology ↗</a>
+    </div>
+    <ul class="tags"><li>Tool calling</li><li>Gemma 4</li><li>Monte Carlo</li><li>Ranking models</li><li>scikit-learn</li><li>Gradio</li><li>Hugging Face Spaces</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>16 / 16</b><span>questions right in the agent's automatic eval, checking both the answer and the tool it called</span></div>
+    <div class="fact"><b>0.705</b><span>Spearman of the predicted finishing order over 68 races, vs. 0.677 for the starting grid</span></div>
+    <div class="fact"><b>~8 laps</b><span>error on the first pit stop: no better than a simple historical rule, and reported as such</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>In December 2025 I made a finishing-order predictor for the Abu Dhabi GP. It got right what everyone gets right (whoever starts at the front usually finishes there) and said nothing about strategy, the part of a race I find most interesting. During the 2026 season I turned it into something else.</p>
+    <p>I wanted to learn three things: how to model a system with a lot of noise (tyres, traffic, safety cars) and test it without fooling myself; how to evaluate forecasts honestly, using only what was known before each race; and how to put an LLM on top of real calculations so that every number it says comes from a tool, not from its memory.</p>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>Data.</strong> 68 races from 2024 to 2026 and 61,553 clean laps from OpenF1 and FastF1, plus Pirelli's compound nominations. One command updates everything after each session.</li>
+      <li><strong>Tyre model.</strong> Fuel effect removed with a fixed rate; wear measured within each stint, which cancels the pace difference between cars. A small ridge regression beat gradient boosting at predicting wear for a race not yet run.</li>
+      <li><strong>Strategy and race simulation.</strong> Monte Carlo over thousands of races with common random numbers, then a lap-by-lap simulation of the whole field: traffic, overtaking, dirty air, safety cars and retirements. The undercut is not a rule in the code; it appears when new tyres gain more than the gap.</li>
+      <li><strong>Finishing-order model.</strong> A Plackett-Luce ranking model (driver and team strengths, as in van Kesteren &amp; Bergkamp, 2023) averaged with a gradient-boosting model, with win, podium and top-10 chances scored by the Brier score.</li>
+      <li><strong>The race engineer.</strong> Gemma 4 31B with 10 tools (strategy plan with what-if inputs, whole-field simulation, results, standings, prediction log). It runs on a chain of free models that switches in about a second when one is rate-limited, has a time budget per answer, and shows in the chat which model is answering and each tool it calls.</li>
+      <li><strong>Dashboard.</strong> Gradio with a custom canvas replay of a simulated race on the real track shape, smoothed from telemetry.</li>
+    </ul>
+
+    <h2>Results</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Backtest, walk-forward</th><th class="num">model</th><th class="num">simple baseline</th></tr></thead>
+      <tbody>
+        <tr><td>Finishing order, Spearman (68 races)</td><td class="num">0.705</td><td class="num">0.677 (grid)</td></tr>
+        <tr><td>Same, 2025–26 only (not used for tuning)</td><td class="num">0.684</td><td class="num">0.648 (grid)</td></tr>
+        <tr><td>Whole-field simulation, expected order (17 races of 2026)</td><td class="num">0.698</td><td class="num">0.672 (grid)</td></tr>
+        <tr><td>Predicted tyre wear, mean error (s/lap per lap of age)</td><td class="num">0.030</td><td class="num">0.088 (practice runs)</td></tr>
+        <tr><td>First pit stop, median error (laps)</td><td class="num">8–9</td><td class="num">8 (historical rule)</td></tr>
+      </tbody>
+    </table></div>
+    <p>The order model beats its first version in 47 of 68 races (p = 0.002), but beats the grid in 41 of 68 (p = 0.11), so it is better on average without being significantly better, and the grid still picks the winner more often. The simulation picks pit timing no better than a simple rule: a quarter of real first stops happen under a safety car, which no pre-race plan can see. It is a tool to compare options, not a forecast of the stop lap.</p>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>A simple baseline is mandatory.</strong> Without the historical rule I would have believed the strategy simulator worked.</li>
+      <li><strong>Leakage is rarely obvious.</strong> Using the race's own track temperature looked innocent. Later, the order model's first ensemble score was inflated by a tie-break that followed the real finishing order; fixing it took the score from 0.719 to 0.705.</li>
+      <li><strong>Fit the model to the shape of the problem.</strong> A race result is a ranking. Modelling it as one (Plackett-Luce) helped more than tuning another regressor.</li>
+      <li><strong>Small models win with little data.</strong> A three-variable ridge regression beat gradient boosting at predicting tyre wear.</li>
+      <li><strong>Measure before fixing.</strong> I was sure the simulated field spread out too much and proposed a fix. Measuring first showed the opposite; the fix would have made it worse.</li>
+      <li><strong>In an agent, the tool is the reliable part, and its text is part of the prompt.</strong> When a tool returned only numbers, the model explained uncertainty with the wrong cause. Returning a short "how to read this" fixed it.</li>
+      <li><strong>Free APIs fail a lot.</strong> A single free-tier call once took almost three minutes. A chain of free models, a time budget and live progress in the chat turned "it hangs" into a working demo.</li>
+    </ol>
+
+    <h2>Read more</h2>
+    <ul>
+      <li><a href="https://huggingface.co/spaces/vtaua/f1-pit-wall" target="_blank" rel="noopener">Live demo</a>: strategy, race simulation with replay, race engineer chat, scoreboard</li>
+      <li><a href="https://github.com/victoriaT19/f1-pit-wall/blob/main/docs/methodology.md" target="_blank" rel="noopener">Methodology</a>: every model, with its equations and references</li>
+      <li><a href="https://github.com/victoriaT19/f1-pit-wall/blob/main/docs/test-log.md" target="_blank" rel="noopener">Test log</a>: every backtest and experiment, including the ones that failed</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../tokenprof/">← tokenprof</a>
+    <a href="../resonance/">Next: Resonance →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>

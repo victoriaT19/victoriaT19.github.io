@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knee report labeler · Victória Tauanny</title>
+<meta name="description" content="An LLM turns 4,407 knee MRI reports into soft labels for an image model, from only 58 expert labels.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Kaggle · RSNA Knee Abnormality Detection · 2026</div>
+    <h1>Knee report labeler</h1>
+    <p class="lede">An LLM reads knee MRI reports and grades 12 findings; a calibration on the few expert-labelled studies turns the grades into soft labels that train an image model.</p>
+    <div class="links">
+      <a class="pill primary" href="https://github.com/victoriaT19/knee-report-labeler" target="_blank" rel="noopener">Source ↗</a>
+      <a class="pill" href="https://www.kaggle.com/code/victoriatauanny/01-label-reports" target="_blank" rel="noopener">Kaggle notebooks ↗</a>
+      <a class="pill" href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection" target="_blank" rel="noopener">Competition ↗</a>
+    </div>
+    <ul class="tags"><li>LLMs</li><li>Weak supervision</li><li>Calibration</li><li>transformers</li><li>PyTorch</li><li>Medical imaging</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>58 → 4,407</b><span>studies with labels: from expert labels only to LLM-made soft labels for all</span></div>
+    <div class="fact"><b>0.81</b><span>mean AUC of the LLM's grades against the expert labels, over 12 findings</span></div>
+    <div class="fact"><b>0.828</b><span>private-leaderboard AUC of the image model trained on them (late submission)</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>Every training study in the competition had a free-text radiology report, but only 58 of 4,407 had expert labels for the 12 findings. I wanted to learn whether an LLM could be the labeler, a form of weak supervision, and how to tell how much each of its labels can be trusted. It was also my first time working with medical images and running a full pipeline within a free Kaggle GPU's limits.</p>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>Grading.</strong> Qwen2.5-7B-Instruct reads each report, in any language, and grades every finding from 0 to 3 (not mentioned, equivocal, mild, moderate or severe) as one short line of JSON.</li>
+      <li><strong>Defensive parsing.</strong> JSON first and a regex fallback, with failures counted (65 of 4,407, 1.5%).</li>
+      <li><strong>Calibration.</strong> For each finding, the probability that an expert would mark it given the LLM's grade, estimated on the 58 labelled studies with smoothing and forced monotonicity. This learns the annotators' conventions, such as whether "small effusion" counts, without hand-written rules.</li>
+      <li><strong>Engineering for a free GPU.</strong> Batches sized by a token budget and halved on out-of-memory errors, a resumable cache after every batch, and a TF-IDF fallback with no LLM. 4,407 reports took 90 minutes on two T4s.</li>
+      <li><strong>The image model.</strong> A 2.5D EfficientNetV2 per MRI series, a small transformer across series and one attention query per finding, trained on the soft labels.</li>
+    </ul>
+
+    <h2>Results</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Finding (AUC of the LLM grade vs. experts)</th><th class="num">positives / 58</th><th class="num">AUC</th></tr></thead>
+      <tbody>
+        <tr><td>ACL tear</td><td class="num">24</td><td class="num">0.95</td></tr>
+        <tr><td>MCL tear</td><td class="num">9</td><td class="num">0.92</td></tr>
+        <tr><td>Medial meniscus</td><td class="num">26</td><td class="num">0.89</td></tr>
+        <tr><td>Effusion</td><td class="num">35</td><td class="num">0.80</td></tr>
+        <tr><td>Patellofemoral osteoarthritis</td><td class="num">21</td><td class="num">0.66</td></tr>
+        <tr><td><strong>Mean of all 12</strong></td><td class="num"></td><td class="num"><strong>0.81</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p>Tears, which reports state explicitly, come out strongest; osteoarthritis, described in many different words, comes out weakest. The image model reached a mean AUC of 0.840 public and 0.828 private as a late submission (the top of the leaderboard was around 0.96, with a single model on one fold and no ensembling). On the expert labels it scored 0.84, <mark>higher than the LLM grades it learned from</mark>, so the soft labels carried enough signal to generalize beyond them.</p>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>An LLM can be a labeler, if you measure it per label.</strong> The per-finding table is the real result: it says which soft labels to trust and which not to.</li>
+      <li><strong>Calibration on a few gold labels is worth more than prompt tweaks.</strong> 58 expert labels were enough to map the LLM's grades onto the annotators' conventions.</li>
+      <li><strong>Plan for the GPU to die.</strong> Resumable caches and adaptive batches turned session limits and out-of-memory errors into minor delays.</li>
+      <li><strong>Finish the whole pipeline early.</strong> The labeler was ready during the competition but the image model was not, so the score came two weeks late. Next time, a weak end-to-end version first.</li>
+    </ol>
+
+    <h2>Read more</h2>
+    <ul>
+      <li><a href="https://github.com/victoriaT19/knee-report-labeler" target="_blank" rel="noopener">README</a>: method, all 12 findings and the limits</li>
+      <li><a href="https://www.kaggle.com/code/victoriatauanny/01-label-reports" target="_blank" rel="noopener">Kaggle notebooks</a>: labeling, preprocessing, training and offline inference</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../resonance/">← Resonance</a>
+    <a href="../">All projects →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>

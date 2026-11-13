@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tokenprof · Victória Tauanny</title>
+<meta name="description" content="A token profiler for LLM agents, and a study of small Gemma 4 coding agents built on it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Research · open source · 2026</div>
+    <h1>tokenprof</h1>
+    <p class="lede">A profiler that shows where every token of an LLM agent goes, and a study of small Gemma 4 coding agents for the Gemma 4 Developer Agent competition on Kaggle.</p>
+    <div class="links">
+      <a class="pill primary" href="https://www.kaggle.com/competitions/gemma-4-developer-agent-paper/writeups/resolution-rate-is-not-enough-profiling-small-gem" target="_blank" rel="noopener">Read the paper ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/tokenprof" target="_blank" rel="noopener">Source ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/tokenprof/tree/main/experiments/swegemma" target="_blank" rel="noopener">Study data &amp; traces ↗</a>
+    </div>
+    <ul class="tags"><li>Python</li><li>LLM agents</li><li>vLLM</li><li>LangGraph</li><li>Statistics</li><li>Kaggle GPUs</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>~40%</b><span>of all prompt tokens were a fixed prefix resent on every call</span></div>
+    <div class="fact"><b>29% → 0%</b><span>E2B runs killed by a context overflow, after one config change</span></div>
+    <div class="fact"><b>1,032</b><span>task attempts over 8 full runs, every trace published</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>Agents are usually judged by one number: how many tasks they solve. I wanted to understand <em>why</em> an agent fails and where its context window goes, the way a profiler explains a slow program. I also wanted to learn how to evaluate agents properly when you cannot afford many runs: with a weekly GPU quota, a change that moves the score by two tasks can be pure noise.</p>
+    <p>The Gemma 4 Developer Agent competition gave me a concrete setting: small Gemma 4 models (E2B and E4B) fixing real issues in Python repositories, with a 32k-token window where every wasted token pushes out code the model needs.</p>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>A logging proxy</strong> that sits between any agent and an OpenAI-compatible API and records tokens, cached tokens, cost and latency for every call.</li>
+      <li><strong>A trajectory profiler</strong> (<code>tokenprof swe</code>) that rebuilds every prompt from the competition's traces: system prompt, task, history, each tool's outputs. Tool schemas never appear in the traces, so their size is fitted by least squares from the first call of each task (1,011 tokens).</li>
+      <li><strong>Twelve detectors</strong> for wasteful or failing behaviour: blind truncated file reads, repeated reads, failed edits, repetition loops that hit the output cap, context overflows, calls after submitting.</li>
+      <li><strong>A Kaggle runner and paired statistical tests</strong>: McNemar for solved tasks, Fisher's exact test for behaviour.</li>
+    </ul>
+
+    <h2>What the profile showed</h2>
+    <p>On all 129 public tasks, the official sample configuration solved 10 tasks with E4B and 6 with E2B. The profile explained much of why:</p>
+    <ul>
+      <li>About 40% of prompt tokens were the same prefix (system prompt, tool schemas, task) resent on every call.</li>
+      <li>In 83% of E4B runs the agent read a long file without a line range and got only its first 150 lines, usually imports.</li>
+      <li>The edit tool failed 38% (E4B) to 70% (E2B) of the time, mostly because the model mixed lines it had seen with lines it never read.</li>
+      <li>The sample reserved 16,384 of the 32k tokens for output; any prompt above that was rejected, which ended 29% of E2B runs.</li>
+    </ul>
+
+    <h3>Three profiler-guided changes</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>E4B</th><th class="num">base</th><th class="num">budget fix</th><th class="num">prompt rules</th><th class="num">both</th></tr></thead>
+      <tbody>
+        <tr><td>Tasks solved (of 129)</td><td class="num">10</td><td class="num">12</td><td class="num">12</td><td class="num">10</td></tr>
+        <tr><td>Runs with a blind truncated read</td><td class="num">83%</td><td class="num">89%</td><td class="num">54%**</td><td class="num">65%**</td></tr>
+        <tr><td>Runs with a context overflow</td><td class="num">7%</td><td class="num">0%**</td><td class="num">5%</td><td class="num">1%*</td></tr>
+        <tr><td>Runs with no submission</td><td class="num">9%</td><td class="num">0%**</td><td class="num">5%</td><td class="num">1%**</td></tr>
+      </tbody>
+    </table></div>
+    <p>Fisher's exact test against the base run: * p &lt; 0.05, ** p &lt; 0.01. Every change moved the behaviour it targeted; <mark>none changed the number of solved tasks significantly</mark> (McNemar p ≥ 0.73). An unchanged re-run of the base solved 9 tasks and showed no significant behaviour change, so the shifts are not just run-to-run noise.</p>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>The headline metric can be blind to real improvements.</strong> With under 15 solved tasks, two more or fewer is noise. Behaviour measured over hundreds of tool calls in the same traces can be tested even when the score cannot.</li>
+      <li><strong>Always run a noise control.</strong> Re-running the baseline unchanged was the cheapest experiment and the one that made every other result believable.</li>
+      <li><strong>Small models fail at the interface, not at reasoning.</strong> They read blindly, edit from memory and stop early. Prompt rules fixed the first and the last, but not editing: the model could find the code but not copy it exactly.</li>
+      <li><strong>Defaults hide costs.</strong> One output setting silently ended a third of the small model's runs; nobody notices without looking at the traces.</li>
+      <li><strong>Write down limitations as carefully as results.</strong> The prompt rules were written after seeing the profile of the same tasks, so their gains may be smaller on new ones. The paper says so.</li>
+    </ol>
+
+    <h2>Read more</h2>
+    <ul>
+      <li><a href="https://www.kaggle.com/competitions/gemma-4-developer-agent-paper/writeups/resolution-rate-is-not-enough-profiling-small-gem" target="_blank" rel="noopener">The paper</a>: "Resolution Rate Is Not Enough: Profiling Small Gemma 4 Agents from Traces"</li>
+      <li><a href="https://github.com/victoriaT19/tokenprof/tree/main/experiments/swegemma" target="_blank" rel="noopener">The study folder</a>: configurations, scripts, all eight runs' traces, and the commands that rebuild every table without a GPU</li>
+      <li><a href="https://github.com/victoriaT19/tokenprof/blob/main/docs/test-log.md" target="_blank" rel="noopener">Test log</a>: every test and experiment, with date, setup and numbers</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../">← All projects</a>
+    <a href="../pit-wall/">Next: Pit wall →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resonance · Victória Tauanny</title>
+<meta name="description" content="Gemma 4 E2B fine-tuned into a two-level physics tutor, and what fine-tuning really changed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Fine-tuning · Hugging Face · Gemma 4 Good Hackathon · 2026</div>
+    <h1>Resonance</h1>
+    <p class="lede">A physics tutor made by fine-tuning Gemma 4 E2B to answer in two levels, the intuition first and then the derivation, with interactive simulations next to the chat.</p>
+    <div class="links">
+      <a class="pill primary" href="https://huggingface.co/spaces/vtaua/resonance-physics-demo" target="_blank" rel="noopener">Try the demo ↗</a>
+      <a class="pill" href="https://huggingface.co/vtaua/resonance-gemma4-physics" target="_blank" rel="noopener">Model ↗</a>
+      <a class="pill" href="https://github.com/victoriaT19/resonance-physics" target="_blank" rel="noopener">Source ↗</a>
+    </div>
+    <ul class="tags"><li>Gemma 4</li><li>QLoRA</li><li>Unsloth</li><li>Distillation</li><li>LLM as judge</li><li>Gradio</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>330</b><span>question–answer pairs written by Gemma 4 31B and filtered by automatic checks</span></div>
+    <div class="fact"><b>2.3 vs 3.3</b><span>judge grade: aggressive training made the physics worse (sign test, p = 0.049)</span></div>
+    <div class="fact"><b>100%</b><span>answers in the right format after the gentle version, with the base model's physics kept</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>I wanted to learn fine-tuning end to end: building a dataset, training on a free GPU, and above all evaluating whether the tuned model is actually better than the one I started from. A physics tutor was a good test because answers can be checked: the central equation is either there or not.</p>
+    <p>The first version, made for the Gemma 4 Good Hackathon in May 2026, trained, published an adapter and served a demo. Looking at it again months later, almost nothing worked as described, so I rebuilt it.</p>
+
+    <h2>What was wrong with the first version</h2>
+    <ul>
+      <li>The prompts used Gemma 2/3 chat markers, which Gemma 4's tokenizer reads as plain text, so training, data and demo all used a format the model never knew.</li>
+      <li>The demo loaded the base model and never the adapter.</li>
+      <li>The "benchmark" ran only the base model, on 5 questions.</li>
+      <li>The training answers were written by the base model itself, so fine-tuning could only copy its own mistakes.</li>
+      <li>Over a third of the adapter's weights went to the vision and audio parts of the model, which text training never uses.</li>
+    </ul>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>Data by distillation.</strong> Questions from a syllabus of about 120 topics and from recent arXiv abstracts; a larger teacher (Gemma 4 31B) writes the answers; an answer is kept only if it has both levels, valid LaTeX and no template leaks, after a second physics review by the teacher.</li>
+      <li><strong>Training.</strong> QLoRA (rank 16) with Unsloth on one free T4, on the language model only, with the loss on the answers alone.</li>
+      <li><strong>Evaluation.</strong> Base and tuned models answer 20 held-out questions; each answer is checked for format and for the key equation, and graded by an LLM judge with a reference answer. Models are compared question by question with a sign test.</li>
+      <li><strong>Demo.</strong> A Gradio chat with three simulations (damped oscillator, wave packet, Kepler orbit) whose sliders update the plot in about 0.1 s, each tested against its closed-form solution.</li>
+    </ul>
+
+    <h2>Results</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>20 held-out questions</th><th class="num">base</th><th class="num">strong (lr 2e-4, 2 epochs)</th><th class="num">gentle (lr 5e-5, 1 epoch)</th></tr></thead>
+      <tbody>
+        <tr><td>Answers passing every format check</td><td class="num">90%</td><td class="num">100%</td><td class="num">100%</td></tr>
+        <tr><td>Key equation present</td><td class="num">80%</td><td class="num">65%</td><td class="num">85%</td></tr>
+        <tr><td>Judge grade (1–5)</td><td class="num">3.30</td><td class="num">2.30</td><td class="num">3.20</td></tr>
+        <tr><td>Validation loss</td><td class="num">–</td><td class="num">0.665</td><td class="num">0.884</td></tr>
+      </tbody>
+    </table></div>
+    <p>The strong run had the <mark>lower validation loss and the worse physics</mark>: it wrote confident derivations that went wrong, such as Snell's law without refractive indices. The gentle run kept the base model's physics (6 wins each, 8 ties) while always using the two-level format and writing 22% fewer words. That one is published.</p>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>Lower loss is not better answers.</strong> The validation set was teacher text too, so a lower loss meant closer imitation of the teacher's style, not more correct physics. Only a held-out evaluation with a judge showed it.</li>
+      <li><strong>Imitation transfers style more than knowledge.</strong> Training a 2B model hard on a 31B model's derivations taught it what a derivation looks like, not how to do one, which matches Gudibande et al. (2023).</li>
+      <li><strong>Check the plumbing before the model.</strong> The chat template, which weights the adapter touches and whether the demo loads the adapter at all mattered more than any hyperparameter.</li>
+      <li><strong>Small evaluations need honest statistics.</strong> 20 questions detect only large differences; a sign test makes that explicit instead of hiding it.</li>
+    </ol>
+
+    <h2>Read more</h2>
+    <ul>
+      <li><a href="https://github.com/victoriaT19/resonance-physics" target="_blank" rel="noopener">README</a>: the full list of problems found in the first version and how each was fixed</li>
+      <li><a href="https://github.com/victoriaT19/resonance-physics/blob/main/docs/test-log.md" target="_blank" rel="noopener">Test log</a>: raw answers, grades and every run</li>
+      <li><a href="https://huggingface.co/vtaua/resonance-gemma4-physics" target="_blank" rel="noopener">Model card</a>: written from the measured numbers</li>
+    </ul>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../pit-wall/">← Pit wall</a>
+    <a href="../knee-report-labeler/">Next: Knee report labeler →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>

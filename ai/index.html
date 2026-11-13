@@ -4,288 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Victória Tauanny · AI &amp; ML</title>
-<meta name="description" content="LLM agents, fine-tuning, profiling and evaluation: projects, papers and competitions by Victória Tauanny.">
+<meta name="description" content="LLM agents, fine-tuning, profiling and evaluation: projects by Victória Tauanny.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;500;600;700&display=swap">
-<style>
-/* Same identity as the main site: ink outlines, hard offset shadows, Bagel Fat One + Figtree. */
-:root {
-  --bg: #f1ecff; --card: #ffffff; --ink: #1d1442; --muted: #4d4570; --link: #4b2fd6;
-  --line: #1d1442; --shade: #1d1442; --chip: #ebe5ff; --spec: #fff0a8; --on-c: #1d1442;
-  --ai: #b69cff; --y: #ffd84d; --g: #4fd9bd; --p: #ff9bd2; --b: #7cb4ff;
-  --f-display: "Bagel Fat One", "Segoe UI", system-ui, sans-serif;
-  --f-body: "Figtree", "Segoe UI", system-ui, sans-serif;
-  color-scheme: light;
-}
-:root[data-theme="dark"] {
-  --bg: #140f2e; --card: #211a47; --ink: #f3efff; --muted: #bdb4e6; --link: #b7a6ff;
-  --line: #c4b6ff; --shade: #05030f; --chip: #342b6b; --spec: #3d3478;
-  color-scheme: dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #140f2e; --card: #211a47; --ink: #f3efff; --muted: #bdb4e6; --link: #b7a6ff;
-    --line: #c4b6ff; --shade: #05030f; --chip: #342b6b; --spec: #3d3478;
-    color-scheme: dark;
-  }
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font: 400 16px/1.6 var(--f-body);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-a { color: inherit; }
-a:focus-visible, button:focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
-.wrap { max-width: 1120px; margin: 0 auto; position: relative; }
-.theme { position: absolute; top: 16px; right: 0; padding: 8px 12px; font-size: 14px; z-index: 1; }
-
-header.intro { padding-block: clamp(72px, 9vw, 96px) clamp(28px, 5vw, 48px); display: grid; gap: 22px; }
-.kicker { font: 600 17px/1.4 var(--f-body); color: var(--muted); }
-h1 { font: 400 clamp(46px, 9vw, 104px)/0.98 var(--f-display); margin: 0; text-wrap: balance; }
-h1 .tag { display: inline-block; font-size: 0.42em; vertical-align: middle; padding: 6px 14px 4px; margin-left: 6px;
-  background: var(--ai); color: var(--on-c); border: 3px solid var(--line); border-radius: 14px; box-shadow: 3px 3px 0 var(--shade); transform: rotate(-3deg); }
-.lede { font-size: clamp(18px, 2vw, 21px); max-width: 62ch; color: var(--muted); margin: 0; }
-.lede strong { color: var(--ink); font-weight: 700; }
-.links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  font: 700 15px/1 var(--f-body); text-decoration: none;
-  padding: 12px 16px; border: 3px solid var(--line); border-radius: 12px;
-  background: var(--card); color: var(--ink); cursor: pointer; box-shadow: 3px 3px 0 var(--shade);
-  transition: transform .12s, box-shadow .12s, background .12s;
-}
-.btn:hover { background: var(--y); color: var(--on-c); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shade); }
-.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shade); }
-.btn.alt { background: var(--ai); color: var(--on-c); }
-.email { user-select: all; }
-
-section { padding-block: 28px; }
-.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 22px; }
-.head h2 { font: 400 clamp(30px, 4vw, 44px)/1.05 var(--f-display); margin: 0; }
-.head p { margin: 0; color: var(--muted); font-size: 17px; }
-
-/* Results strip: one number per project, each card in its project's accent. */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 18px; }
-.stat { background: var(--c); color: var(--on-c); border: 3px solid var(--line); border-radius: 18px; box-shadow: 5px 5px 0 var(--shade);
-  padding: 18px 18px 16px; display: grid; gap: 6px; text-decoration: none; transition: transform .12s, box-shadow .12s; }
-.stat:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--shade); }
-.stat b { font: 400 clamp(30px, 3.4vw, 40px)/1 var(--f-display); font-variant-numeric: tabular-nums; }
-.stat span { font: 600 15px/1.35 var(--f-body); }
-.stat small { font: 700 13px/1 var(--f-body); opacity: .8; }
-
-.projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 22px; }
-article.proj {
-  background: var(--card); border: 3px solid var(--line); border-radius: 18px; box-shadow: 5px 5px 0 var(--shade);
-  padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; scroll-margin-top: 24px;
-}
-article.proj.wide { grid-column: 1 / -1; }
-.label { align-self: start; font: 700 13px/1 var(--f-body); padding: 6px 10px; border: 2px solid var(--line); border-radius: 999px; background: var(--c); color: var(--on-c); }
-.proj h3 { font: 700 23px/1.2 var(--f-body); margin: 0; text-wrap: balance; }
-.proj .ctx { font: 500 14px/1.4 var(--f-body); color: var(--muted); margin-top: 4px; }
-.proj p { margin: 0; }
-.proj ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
-.proj ul strong { color: var(--ink); }
-.spec { font: 700 14px/1.4 var(--f-body); padding: 8px 12px; background: var(--spec); border: 2px solid var(--line); border-radius: 10px; font-variant-numeric: tabular-nums; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; padding-left: 0; margin-bottom: 0; }
-.proj ul.chips { display: flex; padding-left: 0; }
-.chips li { list-style: none; font: 600 13px/1 var(--f-body); padding: 7px 10px; border-radius: 999px; background: var(--chip); color: var(--ink); }
-.repo { display: flex; gap: 18px; flex-wrap: wrap; font: 700 15px/1 var(--f-body); }
-.repo a { color: var(--link); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; white-space: nowrap; }
-.repo a:hover { color: var(--ink); }
-
-.list { display: grid; gap: 14px; }
-.row { background: var(--card); border: 3px solid var(--line); border-radius: 16px; box-shadow: 4px 4px 0 var(--shade);
-  padding: 16px 18px; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 4px 18px; align-items: baseline; }
-.row .when { font: 700 14px/1.3 var(--f-body); color: var(--muted); font-variant-numeric: tabular-nums; }
-.row h3 { font: 700 18px/1.3 var(--f-body); margin: 0; }
-.row p { grid-column: 2; margin: 0; color: var(--muted); font-size: 15px; }
-.row .repo { grid-column: 2; margin-top: 6px; font-size: 14px; }
-
-.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 18px; }
-.tool { background: var(--card); border: 3px solid var(--line); border-radius: 16px; box-shadow: 4px 4px 0 var(--shade); padding: 16px 18px; }
-.tool h3 { font: 400 20px/1.1 var(--f-display); margin: 0 0 10px; }
-.tool .chips { margin-top: 0; }
-
-footer { padding-block: 36px 48px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
-
-@media (max-width: 640px) {
-  .row { grid-template-columns: minmax(0, 1fr); }
-  .row p, .row .repo { grid-column: 1; }
-}
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
 <script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 </head>
 <body>
-<div class="wrap">
-  <button class="btn theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme"><span id="theme-label">Dark mode</span></button>
+<div class="page">
+  <div class="topbar">
+    <a href="../">Games &amp; systems ↗</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
 
-  <header class="intro">
-    <div class="kicker">Computer Engineering at CIn, UFPE. Recife, Brazil</div>
-    <h1>Victória Tauanny <span class="tag">AI &amp; ML</span></h1>
-    <p class="lede">I build systems around <strong>LLMs: agents with tools, fine-tuning, profiling and evaluation</strong>, and I measure whether they work. Every result here is compared with a simple baseline, checked for data leakage and reported even when it is negative.</p>
+  <header class="hero">
+    <div class="kicker">Computer Engineering · CIn, UFPE · Recife</div>
+    <h1>Victória Tauanny</h1>
+    <p class="lede">I build things with <strong>LLMs</strong>, such as agents with tools, fine-tuned models and profilers, and then measure whether they work. Each project below was a way to learn something specific. Its page says what I wanted to learn, what I built, what the numbers showed and what I took away, including the parts that did not work.</p>
     <div class="links">
-      <a class="btn" href="https://github.com/victoriaT19" target="_blank" rel="noopener">GitHub ↗</a>
-      <a class="btn" href="https://huggingface.co/vtaua" target="_blank" rel="noopener">Hugging Face ↗</a>
-      <a class="btn" href="https://www.kaggle.com/victoriatauanny" target="_blank" rel="noopener">Kaggle ↗</a>
-      <a class="btn" href="https://www.linkedin.com/in/victoria-tauanny/" target="_blank" rel="noopener">LinkedIn ↗</a>
-      <button class="btn" id="copy-email" type="button" aria-label="Copy email address"><span class="email">vtps@cin.ufpe.br</span> <span id="copy-label">Copy</span></button>
+      <a class="pill" href="https://github.com/victoriaT19" target="_blank" rel="noopener">GitHub</a>
+      <a class="pill" href="https://huggingface.co/vtaua" target="_blank" rel="noopener">Hugging Face</a>
+      <a class="pill" href="https://www.kaggle.com/victoriatauanny" target="_blank" rel="noopener">Kaggle</a>
+      <a class="pill" href="https://www.linkedin.com/in/victoria-tauanny/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="pill" href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a>
     </div>
   </header>
 
-  <section aria-labelledby="results">
-    <div class="head"><h2 id="results">Results</h2><p>One number from each project. Click to jump to it.</p></div>
-    <div class="stats">
-      <a class="stat" href="#tokenprof" style="--c: var(--ai)"><small>tokenprof</small><b>29% → 0%</b><span>context overflows of a Gemma 4 E2B coding agent after profiler-guided changes</span></a>
-      <a class="stat" href="#pitwall" style="--c: var(--y)"><small>Pit wall</small><b>16 / 16</b><span>questions right in the F1 agent's automatic eval (answer and tool both checked)</span></a>
-      <a class="stat" href="#resonance" style="--c: var(--g)"><small>Resonance</small><b>p = 0.049</b><span>aggressive fine-tuning made the physics worse despite a lower loss</span></a>
-      <a class="stat" href="#knee" style="--c: var(--p)"><small>Knee labeler</small><b>0.828</b><span>AUC on the private leaderboard, trained on LLM-made soft labels</span></a>
-    </div>
-  </section>
+  <div class="section-label">Projects</div>
+  <ul class="projects">
+    <li><a href="tokenprof/">
+      <span class="n">01</span><span class="t">tokenprof</span><span class="go" aria-hidden="true">→</span>
+      <span class="d">A profiler that shows where an LLM agent's tokens go, and a study of small Gemma 4 coding agents built on it.</span>
+      <span class="m">Research · paper · 2026</span>
+    </a></li>
+    <li><a href="pit-wall/">
+      <span class="n">02</span><span class="t">Pit wall</span><span class="go" aria-hidden="true">→</span>
+      <span class="d">An F1 strategy engineer from public data, with a race simulation and an LLM agent that answers by running it.</span>
+      <span class="m">Agent · dashboard · live demo · 2026</span>
+    </a></li>
+    <li><a href="resonance/">
+      <span class="n">03</span><span class="t">Resonance</span><span class="go" aria-hidden="true">→</span>
+      <span class="d">Gemma 4 E2B fine-tuned into a physics tutor that explains in two levels, and an honest look at what fine-tuning changed.</span>
+      <span class="m">Fine-tuning · Hugging Face · 2026</span>
+    </a></li>
+    <li><a href="knee-report-labeler/">
+      <span class="n">04</span><span class="t">Knee report labeler</span><span class="go" aria-hidden="true">→</span>
+      <span class="d">An LLM reads 4,407 MRI reports and turns them into soft labels for an image model, from only 58 expert labels.</span>
+      <span class="m">Kaggle · medical imaging · 2026</span>
+    </a></li>
+  </ul>
 
-  <section aria-labelledby="projects">
-    <div class="head"><h2 id="projects">Projects</h2><p>Code, data and every test run are public.</p></div>
-    <div class="projects">
-
-      <article class="proj wide" id="tokenprof" style="--c: var(--ai)">
-        <span class="label">Research · open source</span>
-        <div><h3>tokenprof: token profiler for LLM agents</h3><div class="ctx">2026 · paper for the Gemma 4 Developer Agent competition</div></div>
-        <p>A proxy between an agent and any OpenAI-compatible API that logs every call (tokens, cache, cost, latency) and points at the waste: context resent on every call, broken prompt caches, loops.</p>
-        <ul>
-          <li>Gemma 4 coding agents (E2B and E4B) on the 129 public tasks of the competition: 8 full runs, 1,032 attempts, one identical re-run as a noise control</li>
-          <li><strong>About 40% of prompt tokens were a fixed prefix resent on every call</strong>; profiler-guided changes cut E2B's context overflows from 29% to 0% (Fisher's exact test, p &lt; 0.01)</li>
-          <li>Written up as a paper, with every trace published</li>
-        </ul>
-        <ul class="chips"><li>Python</li><li>LLM agents</li><li>vLLM</li><li>LangGraph</li><li>Statistics</li><li>Kaggle GPUs</li></ul>
-        <div class="repo">
-          <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent-paper/writeups/resolution-rate-is-not-enough-profiling-small-gem" target="_blank" rel="noopener">Paper ↗</a>
-          <a href="https://github.com/victoriaT19/tokenprof" target="_blank" rel="noopener">Source ↗</a>
-        </div>
-      </article>
-
-      <article class="proj wide" id="pitwall" style="--c: var(--y)">
-        <span class="label">Agent · dashboard · deployed</span>
-        <div><h3>Pit wall: F1 race strategy with an LLM race engineer</h3><div class="ctx">2026 · updated after every session of the remaining races</div></div>
-        <p>A strategy engineer built from public timing data and Pirelli's tyre nominations, with a chat where an LLM answers by running the same calculations as the dashboard.</p>
-        <ul>
-          <li><strong>Agent:</strong> Gemma 4 31B with 10 tools (strategy plan, whole-field simulation, results, standings), on a chain of free models that switches when one is rate-limited and shows each tool call live; 16/16 in an automatic eval, and the fallback model answered all it reached</li>
-          <li><strong>Models:</strong> tyre degradation, Monte Carlo pit strategy and a lap-by-lap simulation of the whole field with retirements; finishing order from a Plackett-Luce ranking model ensembled with gradient boosting (Spearman 0.705 vs. 0.677 for the grid over 68 races)</li>
-          <li><strong>Honest backtests:</strong> leakage-free, reported when negative; pit timing is no better than a historical baseline, and a leak hidden in a tie-break was found and fixed</li>
-        </ul>
-        <ul class="chips"><li>Tool calling</li><li>Gemma 4</li><li>Monte Carlo</li><li>scikit-learn</li><li>Gradio</li><li>Hugging Face Spaces</li></ul>
-        <div class="repo">
-          <a href="https://huggingface.co/spaces/vtaua/f1-pit-wall" target="_blank" rel="noopener">Live demo ↗</a>
-          <a href="https://github.com/victoriaT19/f1-pit-wall" target="_blank" rel="noopener">Source ↗</a>
-        </div>
-      </article>
-
-      <article class="proj" id="resonance" style="--c: var(--g)">
-        <span class="label">Fine-tuning · Hugging Face</span>
-        <div><h3>Resonance: Gemma 4 physics tutor</h3><div class="ctx">2026 · Gemma 4 Good Hackathon</div></div>
-        <p>Gemma 4 E2B fine-tuned to answer in two levels: the intuition first, then the derivation.</p>
-        <ul>
-          <li>330 question–answer pairs distilled from Gemma 4 31B, filtered, then QLoRA on one T4</li>
-          <li>Base vs. tuned on 20 held-out questions with an LLM judge and a sign test: <strong>aggressive training made the physics worse</strong> (2.3 vs. 3.3); the conservative version kept it and always got the format right</li>
-        </ul>
-        <div class="spec">gemma-4-E2B-it · QLoRA · T4 16 GB</div>
-        <ul class="chips"><li>Unsloth</li><li>QLoRA</li><li>LLM as judge</li><li>Gradio</li></ul>
-        <div class="repo">
-          <a href="https://huggingface.co/spaces/vtaua/resonance-physics-demo" target="_blank" rel="noopener">Demo ↗</a>
-          <a href="https://huggingface.co/vtaua/resonance-gemma4-physics" target="_blank" rel="noopener">Model ↗</a>
-          <a href="https://github.com/victoriaT19/resonance-physics" target="_blank" rel="noopener">Source ↗</a>
-        </div>
-      </article>
-
-      <article class="proj" id="knee" style="--c: var(--p)">
-        <span class="label">Kaggle · medical imaging</span>
-        <div><h3>LLM as a labeler for knee MRI reports</h3><div class="ctx">2026 · RSNA Knee Abnormality Detection</div></div>
-        <p>An LLM read 4,407 radiology reports and graded 12 findings; a monotonic calibration on the 58 expert-labelled studies turned the grades into soft labels for an image model.</p>
-        <ul>
-          <li>Labels vs. experts: mean AUC 0.81</li>
-          <li>Image model trained on them: AUC 0.828 on the private leaderboard (late submission)</li>
-        </ul>
-        <div class="spec">Qwen2.5-7B-Instruct · calibration · PyTorch</div>
-        <ul class="chips"><li>LLMs</li><li>transformers</li><li>PyTorch</li><li>Calibration</li></ul>
-        <div class="repo"><a href="https://github.com/victoriaT19/knee-report-labeler" target="_blank" rel="noopener">Source ↗</a></div>
-      </article>
-
-    </div>
-  </section>
-
-  <section aria-labelledby="research">
-    <div class="head"><h2 id="research">Research &amp; competitions</h2></div>
-    <div class="list">
-      <div class="row">
-        <span class="when">Current</span>
-        <h3>Undergraduate research in 5G networks</h3>
-        <p>Research scholarship at CIn/UFPE in partnership with Motorola.</p>
-      </div>
-      <div class="row">
-        <span class="when">Nov 2026</span>
-        <h3>Gemma 4 Developer Agent: paper track (Kaggle)</h3>
-        <p>"Resolution Rate Is Not Enough: Profiling Small Gemma 4 Agents from Traces", the tokenprof study.</p>
-        <div class="repo"><a href="https://www.kaggle.com/competitions/gemma-4-developer-agent-paper/writeups/resolution-rate-is-not-enough-profiling-small-gem" target="_blank" rel="noopener">Read it ↗</a></div>
-      </div>
-      <div class="row">
-        <span class="when">Oct 2026</span>
-        <h3>RSNA Knee Abnormality Detection (Kaggle)</h3>
-        <p>LLM-made soft labels for an image model; AUC 0.828 on the private leaderboard.</p>
-      </div>
-      <div class="row">
-        <span class="when">May 2026</span>
-        <h3>Gemma 4 Good Hackathon (Kaggle)</h3>
-        <p>Resonance, the two-level physics tutor, with its base-vs-tuned evaluation.</p>
-      </div>
-    </div>
-  </section>
-
-  <section aria-labelledby="tools">
-    <div class="head"><h2 id="tools">Toolbox</h2></div>
-    <div class="tools">
-      <div class="tool"><h3>LLMs</h3><ul class="chips"><li>Tool calling</li><li>Agents</li><li>QLoRA / Unsloth</li><li>vLLM</li><li>LangGraph</li><li>transformers</li><li>LLM as judge</li></ul></div>
-      <div class="tool"><h3>ML &amp; stats</h3><ul class="chips"><li>PyTorch</li><li>scikit-learn</li><li>Monte Carlo</li><li>Ranking models</li><li>Calibration</li><li>Sign / Fisher tests</li></ul></div>
-      <div class="tool"><h3>Shipping</h3><ul class="chips"><li>Python</li><li>Gradio</li><li>Hugging Face Hub &amp; Spaces</li><li>OpenAI-compatible APIs</li><li>Gemini API</li><li>Git</li></ul></div>
-    </div>
-  </section>
+  <div class="section-label">Research &amp; competitions</div>
+  <ul class="plain">
+    <li><span class="when">Current</span><span class="what"><b>Undergraduate research in 5G networks</b>, CIn/UFPE with Motorola</span></li>
+    <li><span class="when">Nov 2026</span><span class="what"><b>Gemma 4 Developer Agent, paper track</b> (Kaggle): <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent-paper/writeups/resolution-rate-is-not-enough-profiling-small-gem" target="_blank" rel="noopener">Resolution Rate Is Not Enough</a></span></li>
+    <li><span class="when">Oct 2026</span><span class="what"><b>RSNA Knee Abnormality Detection</b> (Kaggle), AUC 0.828 private, late submission</span></li>
+    <li><span class="when">May 2026</span><span class="what"><b>Gemma 4 Good Hackathon</b> (Kaggle), Resonance</span></li>
+  </ul>
 
   <footer>
     <span>Victória Tauanny de Paula da Silva</span>
-    <span>Games, systems and hardware projects: <a href="../">the main site</a>.</span>
+    <span>Games, systems and hardware: <a href="../">the main site</a></span>
   </footer>
 </div>
-
-<script>
-  (function () {
-    var btn = document.getElementById('copy-email');
-    var label = document.getElementById('copy-label');
-    btn.addEventListener('click', function () {
-      var done = function () { label.textContent = 'Copied'; setTimeout(function () { label.textContent = 'Copy'; }, 1600); };
-      var fallback = function () {
-        var r = document.createRange(); r.selectNodeContents(btn.querySelector('.email'));
-        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); label.textContent = 'Selected';
-      };
-      try { navigator.clipboard.writeText('vtps@cin.ufpe.br').then(done, fallback); } catch (e) { fallback(); }
-    });
-    var root = document.documentElement;
-    var themeLabel = document.getElementById('theme-label');
-    function currentTheme() {
-      var t = root.getAttribute('data-theme');
-      if (t === 'dark' || t === 'light') return t;
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    function syncThemeLabel() { themeLabel.textContent = currentTheme() === 'dark' ? 'Light mode' : 'Dark mode'; }
-    document.getElementById('theme-toggle').addEventListener('click', function () {
-      var next = currentTheme() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch (e) {}
-      syncThemeLabel();
-    });
-    syncThemeLabel();
-  })();
-</script>
+<script src="site.js"></script>
 </body>
 </html>
