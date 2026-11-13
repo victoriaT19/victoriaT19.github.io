@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep learning from first principles · Victória Tauanny</title>
+<meta name="description" content="A study repository that rebuilds deep learning from the maths up to training and fine-tuning small language models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <a class="back" href="../">← All projects</a>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">Dark</button>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Study log · Mar–Sep 2026</div>
+    <h1>Deep learning from first principles</h1>
+    <p class="lede">Six months of study written as code that runs: from linear regression and hand-written backpropagation up to a Llama-style model, a chat model with a KV cache, and retrieval and tool calling without frameworks.</p>
+    <div class="links">
+      <a class="pill primary" href="https://github.com/victoriaT19/v3" target="_blank" rel="noopener">Source ↗</a>
+    </div>
+    <ul class="tags"><li>NumPy</li><li>PyTorch</li><li>CUDA C++</li><li>Transformers</li><li>BPE</li><li>RAG</li><li>pytest</li></ul>
+  </header>
+
+  <div class="facts">
+    <div class="fact"><b>10 modules</b><span>from the maths of two textbooks to automated experiments, each with notes</span></div>
+    <div class="fact"><b>~1e-8</b><span>largest gap between my hand-written backward pass and PyTorch's autograd</span></div>
+    <div class="fact"><b>0% → 97%</b><span>held-out accuracy of a tiny chat model after supervised fine-tuning on an addition task</span></div>
+  </div>
+
+  <article class="prose">
+    <h2>Why I built it</h2>
+    <p>I was already using LLMs in projects, but much of what happened inside them was a black box to me. I wanted to understand each layer well enough to write it myself: the maths behind training, autograd, attention, tokenization, what the GPU actually does, and what turns a base model into a chat model. The rule was to write every piece myself, check it against a reference where one exists, and write down what I learned and what did not work.</p>
+
+    <h2>What I built</h2>
+    <ul>
+      <li><strong>Foundations.</strong> NumPy experiments for <em>Understanding Deep Learning</em> (Prince), chapters 2–9: shallow networks, losses as likelihoods, backpropagation with a gradient check, initialization, bias and variance, regularization. From <em>Mathematical Introduction to Deep Learning</em> (Jentzen, Kuckuck, von Wurstemberger): explicit ReLU interpolation against its error bound, and GD, SGD, momentum, Adagrad, RMSprop and Adam side by side.</li>
+      <li><strong>micrograd and makemore.</strong> A scalar autograd engine tested against PyTorch, then character-level language models: bigram, MLP, BatchNorm and activation statistics, a full manual backward pass and a WaveNet-style model.</li>
+      <li><strong>GPT and tokenization.</strong> A nanoGPT-style transformer on Tiny Shakespeare and a BPE tokenizer with GPT-4's split pattern and special tokens.</li>
+      <li><strong>CUDA C++.</strong> Following NVIDIA's tutorials: Thrust, kernels, grid-stride loops, a shared-memory and warp-shuffle reduction, tiled matrix multiplication and streams.</li>
+      <li><strong>A modern LLM.</strong> RMSNorm, rotary embeddings, SwiGLU and grouped-query attention, with a memory-mapped dataset, AdamW, warm-up and cosine schedule, gradient accumulation, checkpoints and top-p sampling.</li>
+      <li><strong>Chat.</strong> Following nanochat: chat special tokens, a loss mask on the assistant's reply, a KV cache and supervised fine-tuning.</li>
+      <li><strong>AI engineering and experiments.</strong> TF-IDF retrieval and RAG over the repository's own notes, a tool-calling agent with an AST-safe calculator, an eval harness, and a fixed-time-budget search loop inspired by autoresearch.</li>
+    </ul>
+
+    <h2>Results</h2>
+    <ul>
+      <li><strong>The checks pass.</strong> 23 tests over autograd, tokenizers, the chat model and the agent loop. The KV cache generates exactly the same tokens as recomputing everything.</li>
+      <li><strong>The small models learn.</strong> The micrograd MLP separates the two-moons data. The bigram model reaches an average loss of 2.45. The chat model goes from 0% to 97% on additions it never saw.</li>
+      <li><strong>Initialization matters as the books say.</strong> With He initialization the activation variance stays stable through the layers. With smaller weights it vanishes, and with larger ones it explodes. With BatchNorm, saturated tanh units drop from 11–22% to about 2–3% per layer.</li>
+      <li><strong>Scale is honest.</strong> My laptop has no NVIDIA GPU. The CUDA examples and the default GPT and LLM configurations are meant for one, so I ran only tiny configurations to check the code end to end.</li>
+    </ul>
+
+    <h2>What I learned</h2>
+    <ol class="learned">
+      <li><strong>Gradients accumulate.</strong> My first autograd assigned gradients instead of adding them, which broke any node used twice. Writing a gradient check before trusting a backward pass became a habit.</li>
+      <li><strong>A chat model is a data format.</strong> The architecture does not change: special tokens and a loss mask on the reply are what turn a base model into an assistant.</li>
+      <li><strong>Tokenization explains odd behaviour.</strong> Accented Portuguese letters are two bytes before any merge, and numbers split into arbitrary chunks. Both cost context and make arithmetic harder.</li>
+      <li><strong>Hardware shapes design.</strong> Memory-bound kernels, tiling and the KV cache explain why grouped-query attention, fused attention kernels and dimensions that are multiples of 64 exist.</li>
+    </ol>
+  </article>
+
+  <nav class="next" aria-label="More projects">
+    <a href="../thermal-anomaly/">← Thermal anomaly detection</a>
+    <a href="../nyc-rental-prices/">Next: NYC rental prices →</a>
+  </nav>
+  <footer>
+    <span>Victória Tauanny</span>
+    <span><a href="mailto:vtps@cin.ufpe.br">vtps@cin.ufpe.br</a></span>
+  </footer>
+</div>
+<script src="../site.js"></script>
+</body>
+</html>
