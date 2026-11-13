@@ -45,7 +45,7 @@
     <h2>What I built</h2>
     <ul>
       <li><strong>Data.</strong> 68 races from 2024 to 2026 and 61,553 clean laps from OpenF1 and FastF1, plus Pirelli's compound nominations. One command updates everything after each session.</li>
-      <li><strong>Tyre model.</strong> Fuel effect removed with a fixed rate; wear measured within each stint, which cancels the pace difference between cars. A small ridge regression beat gradient boosting at predicting wear for a race not yet run.</li>
+      <li><strong>Tyre model.</strong> Fuel effect removed with a fixed rate; wear measured within each stint, which cancels the pace difference between cars. Wear for a race not yet run is the track's level plus a compound step measured inside races, so the soft always wears faster than the hard; the first version got that order backwards.</li>
       <li><strong>Strategy and race simulation.</strong> Monte Carlo over thousands of races with common random numbers, then a lap-by-lap simulation of the whole field: traffic, overtaking, dirty air, safety cars and retirements. The undercut is not a rule in the code; it appears when new tyres gain more than the gap.</li>
       <li><strong>Finishing-order model.</strong> A Plackett-Luce ranking model (driver and team strengths, as in van Kesteren &amp; Bergkamp, 2023) averaged with a gradient-boosting model, with win, podium and top-10 chances scored by the Brier score.</li>
       <li><strong>The race engineer.</strong> Gemma 4 31B with 10 tools (strategy plan with what-if inputs, whole-field simulation, results, standings, prediction log). It runs on a chain of free models that switches in about a second when one is rate-limited, has a time budget per answer, and shows in the chat which model is answering and each tool it calls.</li>
@@ -58,8 +58,9 @@
       <tbody>
         <tr><td>Finishing order, Spearman (68 races)</td><td class="num">0.705</td><td class="num">0.677 (grid)</td></tr>
         <tr><td>Same, 2025–26 only (not used for tuning)</td><td class="num">0.684</td><td class="num">0.648 (grid)</td></tr>
-        <tr><td>Whole-field simulation, expected order (17 races of 2026)</td><td class="num">0.696</td><td class="num">0.672 (grid)</td></tr>
-        <tr><td>Predicted tyre wear, mean error (s/lap per lap of age)</td><td class="num">0.030</td><td class="num">0.088 (practice runs)</td></tr>
+        <tr><td>Whole-field simulation, expected order (17 races of 2026)</td><td class="num">0.703</td><td class="num">0.672 (grid)</td></tr>
+        <tr><td>Predicted tyre wear, mean error (s/lap per lap of age, 2026)</td><td class="num">0.033</td><td class="num">0.088 (practice runs)</td></tr>
+        <tr><td>Strategy uses the compounds most top-10 drivers used (17 races of 2026)</td><td class="num">65%</td><td class="num">12% (first version)</td></tr>
         <tr><td>First pit stop, median error (laps)</td><td class="num">8–9</td><td class="num">8 (historical rule)</td></tr>
       </tbody>
     </table></div>
@@ -70,7 +71,7 @@
       <li><strong>A simple baseline is mandatory.</strong> Without the historical rule I would have believed the strategy simulator worked.</li>
       <li><strong>Leakage is rarely obvious.</strong> Using the race's own track temperature looked innocent. Later, the order model's first ensemble score was inflated by a tie-break that followed the real finishing order; fixing it took the score from 0.719 to 0.705.</li>
       <li><strong>Fit the model to the shape of the problem.</strong> A race result is a ranking. Modelling it as one (Plackett-Luce) helped more than tuning another regressor.</li>
-      <li><strong>Small models win with little data.</strong> A three-variable ridge regression beat gradient boosting at predicting tyre wear.</li>
+      <li><strong>A good average error can hide the wrong answer.</strong> The first tyre model had a fine mean error, yet predicted the soft as the most durable tyre in every race, because Pirelli brings softer compounds to gentler tracks. It only showed when the recommended plans looked absurd.</li>
       <li><strong>Measure before fixing.</strong> I was sure the simulated field spread out too much and proposed a fix. Measuring first showed the opposite; the fix would have made it worse.</li>
       <li><strong>In an agent, the tool is the reliable part, and its text is part of the prompt.</strong> When a tool returned only numbers, the model explained uncertainty with the wrong cause. Returning a short "how to read this" fixed it.</li>
       <li><strong>Free APIs fail a lot.</strong> A single free-tier call once took almost three minutes. A chain of free models, a time budget and live progress in the chat turned "it hangs" into a working demo.</li>
